@@ -1,50 +1,140 @@
-import { useDivePlanner } from "../state/useDivePlanner";
-import { HistoryScreen } from "./screens/HistoryScreen";
-import { PlanFormScreen } from "./screens/PlanFormScreen";
-import { ResultScreen } from "./screens/ResultScreen";
-import { ReviewScreen } from "./screens/ReviewScreen";
-import { SafetyGateScreen } from "./screens/SafetyGateScreen";
+import { useMemo, useState } from "react";
+
+import {
+  createInitialPreliminaryPlan,
+  derivePreliminaryPlanStatus,
+  getDefaultDepthForUnitSystem,
+  getDepthUnitForUnitSystem
+} from "../domain/dive-planning/preliminaryPlan";
+import type {
+  PreliminaryDivePlan,
+  WizardStep
+} from "../domain/dive-planning/types";
+import { DepthScreen } from "./screens/DepthScreen";
+import { NewPlanIntroScreen } from "./screens/NewPlanIntroScreen";
+import { OperationalConfirmationScreen } from "./screens/OperationalConfirmationScreen";
+import { PreliminarySummaryScreen } from "./screens/PreliminarySummaryScreen";
+import { ScenarioScreen } from "./screens/ScenarioScreen";
+import { StartScreen } from "./screens/StartScreen";
+import { UnitSystemScreen } from "./screens/UnitSystemScreen";
 
 export function App() {
-  const planner = useDivePlanner();
+  const [currentStep, setCurrentStep] = useState<WizardStep>("start");
+  const [plan, setPlan] = useState<PreliminaryDivePlan>(() =>
+    createInitialPreliminaryPlan()
+  );
+
+  const updatePlan = (patch: Partial<PreliminaryDivePlan>) => {
+    setPlan((currentPlan) => {
+      const nextPlan = {
+        ...currentPlan,
+        ...patch
+      };
+
+      return {
+        ...nextPlan,
+        status: patch.status ?? derivePreliminaryPlanStatus(nextPlan)
+      };
+    });
+  };
+
+  const startNewPlan = () => {
+    setPlan(createInitialPreliminaryPlan());
+    setCurrentStep("intro");
+  };
+
+  const startDemoPlan = () => {
+    setPlan({
+      ...createInitialPreliminaryPlan(),
+      scenario: "quarry",
+      unitSystem: "metric",
+      plannedDepth: 18,
+      depthUnit: "m",
+      depthSource: "supervisor",
+      status: "in_progress"
+    });
+    setCurrentStep("scenario");
+  };
+
+  const resetAndGoHome = () => {
+    setPlan(createInitialPreliminaryPlan());
+    setCurrentStep("start");
+  };
+
+  const finishPreliminaryPlan = () => {
+    setPlan((currentPlan) => ({
+      ...currentPlan,
+      status: "requires_technical_phase"
+    }));
+    setCurrentStep("summary");
+  };
+
+  const normalizedPlan = useMemo(() => {
+    if (plan.plannedDepth !== null) {
+      return plan;
+    }
+
+    return {
+      ...plan,
+      plannedDepth: getDefaultDepthForUnitSystem(plan.unitSystem),
+      depthUnit: getDepthUnitForUnitSystem(plan.unitSystem)
+    };
+  }, [plan]);
 
   return (
     <main className="app-shell">
-      {planner.screen === "safety" && (
-        <SafetyGateScreen onAccept={planner.acceptSafetyLimitations} />
+      {currentStep === "start" && (
+        <StartScreen onStart={startNewPlan} onDemo={startDemoPlan} />
       )}
 
-      {planner.screen === "form" && (
-        <PlanFormScreen
-          draft={planner.draft}
-          onChangeDraft={planner.updateDraft}
-          onGoToReview={planner.goToReview}
-          onOpenHistory={planner.openHistory}
+      {currentStep === "intro" && (
+        <NewPlanIntroScreen
+          onBack={() => setCurrentStep("start")}
+          onContinue={() => setCurrentStep("scenario")}
         />
       )}
 
-      {planner.screen === "review" && (
-        <ReviewScreen
-          validation={planner.validationPreview}
-          onBack={planner.goToForm}
-          onCalculate={planner.calculate}
+      {currentStep === "scenario" && (
+        <ScenarioScreen
+          plan={normalizedPlan}
+          onBack={() => setCurrentStep("intro")}
+          onContinue={() => setCurrentStep("units")}
+          onChange={updatePlan}
         />
       )}
 
-      {planner.screen === "result" && planner.result && (
-        <ResultScreen
-          result={planner.result}
-          onNewPlan={planner.resetPlan}
-          onBackToForm={planner.goToForm}
-          onOpenHistory={planner.openHistory}
+      {currentStep === "units" && (
+        <UnitSystemScreen
+          plan={normalizedPlan}
+          onBack={() => setCurrentStep("scenario")}
+          onContinue={() => setCurrentStep("depth")}
+          onChange={updatePlan}
         />
       )}
 
-      {planner.screen === "history" && (
-        <HistoryScreen
-          history={planner.history}
-          onBack={planner.goToForm}
-          onClearHistory={planner.clearHistory}
+      {currentStep === "depth" && (
+        <DepthScreen
+          plan={normalizedPlan}
+          onBack={() => setCurrentStep("units")}
+          onContinue={() => setCurrentStep("confirmation")}
+          onChange={updatePlan}
+        />
+      )}
+
+      {currentStep === "confirmation" && (
+        <OperationalConfirmationScreen
+          plan={normalizedPlan}
+          onBack={() => setCurrentStep("depth")}
+          onFinish={finishPreliminaryPlan}
+          onChange={updatePlan}
+        />
+      )}
+
+      {currentStep === "summary" && (
+        <PreliminarySummaryScreen
+          plan={normalizedPlan}
+          onEdit={() => setCurrentStep("scenario")}
+          onNewPlan={resetAndGoHome}
         />
       )}
     </main>
