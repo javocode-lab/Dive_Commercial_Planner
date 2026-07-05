@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   createInitialPreliminaryPlan,
@@ -17,12 +17,23 @@ import { PreliminarySummaryScreen } from "./screens/PreliminarySummaryScreen";
 import { ScenarioScreen } from "./screens/ScenarioScreen";
 import { StartScreen } from "./screens/StartScreen";
 import { UnitSystemScreen } from "./screens/UnitSystemScreen";
+import { ThemeToggle, type ThemeMode } from "./components/ThemeToggle";
 
 export function App() {
   const [currentStep, setCurrentStep] = useState<WizardStep>("start");
+  const [theme, setTheme] = useState<ThemeMode>(() => {
+    const savedTheme = window.localStorage.getItem("dive-ui-theme");
+
+    return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
+  });
   const [plan, setPlan] = useState<PreliminaryDivePlan>(() =>
     createInitialPreliminaryPlan()
   );
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("dive-ui-theme", theme);
+  }, [theme]);
 
   const updatePlan = (patch: Partial<PreliminaryDivePlan>) => {
     setPlan((currentPlan) => {
@@ -83,6 +94,7 @@ export function App() {
 
   return (
     <main className="app-shell">
+      <ThemeToggle theme={theme} onChange={setTheme} />
       {currentStep === "start" && (
         <StartScreen onStart={startNewPlan} onDemo={startDemoPlan} />
       )}
