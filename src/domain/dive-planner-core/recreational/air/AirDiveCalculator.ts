@@ -92,22 +92,22 @@ function determineFinalPressureGroup(row: RecreationalAirTableRow, bottomTime: n
 
   return matchingRange
     ? {
-        status: "available",
-        group: matchingRange.group,
-        table: "Tabla I",
-        datasetStatus: CMAS_FEDECAS_TABLE_I_PRESSURE_GROUP_STATUS,
-        message:
-          `Grupo de presión final asignado: ${matchingRange.group}. Rango usado: más de ${matchingRange.minExclusiveTimeMinutes} min y hasta ${matchingRange.maxInclusiveTimeMinutes} min para ${row.depthMeters} m / ${row.depthFeet} ft.`,
-        matchedRange: matchingRange
-      }
+      status: "available",
+      group: matchingRange.group,
+      table: "Tabla I",
+      datasetStatus: CMAS_FEDECAS_TABLE_I_PRESSURE_GROUP_STATUS,
+      message:
+        `Grupo de presión final asignado: ${matchingRange.group}. Rango usado: más de ${matchingRange.minExclusiveTimeMinutes} min y hasta ${matchingRange.maxInclusiveTimeMinutes} min para ${row.depthMeters} m / ${row.depthFeet} ft.`,
+      matchedRange: matchingRange
+    }
     : {
-        status: "pending_dataset",
-        group: null,
-        table: "Tabla I",
-        datasetStatus: CMAS_FEDECAS_TABLE_I_PRESSURE_GROUP_STATUS,
-        message: "No se encontró un rango de grupo de presión aplicable para el tiempo evaluado.",
-        matchedRange: null
-      };
+      status: "pending_dataset",
+      group: null,
+      table: "Tabla I",
+      datasetStatus: CMAS_FEDECAS_TABLE_I_PRESSURE_GROUP_STATUS,
+      message: "No se encontró un rango de grupo de presión aplicable para el tiempo evaluado.",
+      matchedRange: null
+    };
 }
 
 function buildBaseResult(params: {
@@ -332,7 +332,11 @@ export function calculateRecreationalAirDive(input: RecreationalAirDiveInput): R
         effectiveDepthMeters: effectiveRow.depthMeters,
         effectiveDepthFeet: effectiveRow.depthFeet,
         bottomTimeMinutes: input.bottomTime,
-        matchedRange: finalPressureGroup.matchedRange
+        matchedRangeGroup: finalPressureGroup.matchedRange?.group ?? null,
+        matchedRangeMinExclusiveMinutes:
+          finalPressureGroup.matchedRange?.minExclusiveTimeMinutes ?? null,
+        matchedRangeMaxInclusiveMinutes:
+          finalPressureGroup.matchedRange?.maxInclusiveTimeMinutes ?? null
       }
     ),
     createStep(
