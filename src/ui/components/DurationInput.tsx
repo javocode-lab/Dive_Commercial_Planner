@@ -8,6 +8,8 @@ type DurationInputProps = {
   minMinutes?: number;
   maxMinutes?: number;
   quickOptions?: readonly number[];
+  allowEmpty?: boolean;
+  placeholder?: string;
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -56,26 +58,40 @@ export function DurationInput({
   onChange,
   minMinutes = 0,
   maxMinutes = 720,
-  quickOptions = []
+  quickOptions = [],
+  allowEmpty = false,
+  placeholder = "01:30"
 }: DurationInputProps) {
-  const safeValue = clamp(Math.floor(valueMinutes), minMinutes, maxMinutes);
-  const [draftValue, setDraftValue] = useState(() => formatDurationInput(safeValue));
+  const isEmpty = allowEmpty && valueMinutes <= 0;
+  const safeValue = isEmpty ? 0 : clamp(Math.floor(valueMinutes), minMinutes, maxMinutes);
+  const [draftValue, setDraftValue] = useState(() => (isEmpty ? "" : formatDurationInput(safeValue)));
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isEmpty) {
+      setDraftValue("");
+      return;
+    }
+
     if (valueMinutes !== safeValue) {
       onChange(safeValue);
       return;
     }
 
     setDraftValue(formatDurationInput(safeValue));
-  }, [onChange, safeValue, valueMinutes]);
+  }, [isEmpty, safeValue, valueMinutes]);
 
   const commitValue = (rawValue = draftValue) => {
+    if (allowEmpty && rawValue.trim() === "") {
+      setError(null);
+      onChange(0);
+      return true;
+    }
+
     const parsed = parseDurationInput(rawValue);
 
     if (parsed === null) {
-      setError("Usá el formato HH:MM. Ejemplo: 01:30.");
+      setError(`Usá el formato HH:MM. Ejemplo: ${placeholder}.`);
       return false;
     }
 
@@ -94,6 +110,11 @@ export function DurationInput({
     const masked = applyDurationMask(event.target.value);
     setDraftValue(masked);
     setError(null);
+
+    if (allowEmpty && masked === "") {
+      onChange(0);
+      return;
+    }
 
     const parsed = parseDurationInput(masked);
     if (parsed !== null && parsed >= minMinutes && parsed <= maxMinutes) {
@@ -114,11 +135,14 @@ export function DurationInput({
     onChange(nextValue);
   };
 
+  const inputId = `duration-${label.replace(/\s+/g, "-").toLowerCase()}`;
+  const helperId = `duration-help-${label.replace(/\s+/g, "-").toLowerCase()}`;
+
   return (
     <div className="duration-input">
       <div className="duration-input__heading">
         <div>
-          <label className="duration-input__label" htmlFor={`duration-${label.replace(/\s+/g, "-").toLowerCase()}`}>
+          <label className="duration-input__label" htmlFor={inputId}>
             {label}
           </label>
           {helper && <small className="duration-input__helper">{helper}</small>}
@@ -127,20 +151,20 @@ export function DurationInput({
 
       <div className="duration-input__single-field">
         <input
-          id={`duration-${label.replace(/\s+/g, "-").toLowerCase()}`}
+          id={inputId}
           className={error ? "duration-input__text duration-input__text--error" : "duration-input__text"}
           type="text"
           inputMode="numeric"
           autoComplete="off"
           maxLength={5}
           value={draftValue}
-          placeholder="00:30"
-          aria-describedby={`duration-help-${label.replace(/\s+/g, "-").toLowerCase()}`}
+          placeholder={placeholder}
+          aria-describedby={helperId}
           aria-invalid={Boolean(error)}
           onChange={handleTextChange}
           onBlur={() => {
             if (!commitValue()) {
-              setDraftValue(formatDurationInput(safeValue));
+              setDraftValue(isEmpty ? "" : formatDurationInput(safeValue));
             }
           }}
           onKeyDown={handleKeyDown}
@@ -149,11 +173,13 @@ export function DurationInput({
       </div>
 
       <small
-        id={`duration-help-${label.replace(/\s+/g, "-").toLowerCase()}`}
+        id={helperId}
         className={error ? "duration-input__message duration-input__message--error" : "duration-input__message"}
         aria-live="polite"
       >
-        {error ?? `Ejemplo: 01:30 = 1 h 30 min · Valor actual: ${formatDuration(safeValue)}`}
+        {error ?? (isEmpty
+          ? `Ejemplo: ${placeholder} = 1 h 30 min`
+          : `Ejemplo: ${placeholder} = 1 h 30 min · Valor actual: ${formatDuration(safeValue)}`)}
       </small>
 
       {quickOptions.length > 0 && (
@@ -164,7 +190,7 @@ export function DurationInput({
           {quickOptions.map((option) => (
             <button
               key={option}
-              className={safeValue === option ? "quick-select-chip quick-select-chip--selected" : "quick-select-chip"}
+              className={!isEmpty && safeValue === option ? "quick-select-chip quick-select-chip--selected" : "quick-select-chip"}
               type="button"
               onClick={() => selectQuickOption(option)}
             >

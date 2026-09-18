@@ -13,7 +13,7 @@ type RecreationalWizardStep = "start" | "plan" | "result" | "calculationDetail" 
 const INITIAL_RECREATIONAL_DRAFT: RecreationalPlanDraft = {
   unitSystem: "metric",
   depth: 18,
-  bottomTime: 30,
+  bottomTime: 0,
   gas: "air",
   isRepetitive: false,
   surfaceIntervalMinutes: 60,

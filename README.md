@@ -1,4 +1,4 @@
-# DIVE Commercial Planner — Recreational Mode v2.5.2
+# DIVE Commercial Planner — Recreational Mode v2.5.1
 
 Prototipo funcional para planificación recreativa con aire, inmersión simple y primera versión de buceo repetitivo.
 
@@ -96,11 +96,3 @@ No usar esta versión como única fuente para planificar o ejecutar inmersiones 
 - Formato visible: `HH h MM min`.
 - La edición se realiza dentro de un selector único de duración, con horas y minutos claramente rotulados.
 - El motor continúa recibiendo minutos totales; no cambia ninguna regla de cálculo.
-
-## v2.5.2 — Single HH:MM duration input
-
-- Los tiempos se cargan ahora en un único campo `HH:MM`.
-- Ejemplo visible: `01:30 = 1 h 30 min`.
-- Se mantienen los botones rápidos con etiquetas explícitas como `1 h 30 min`.
-- El motor continúa recibiendo minutos totales; no cambia ninguna regla de cálculo.
-- La misma UX se usa para tiempo de fondo, intervalo en superficie y segunda inmersión.

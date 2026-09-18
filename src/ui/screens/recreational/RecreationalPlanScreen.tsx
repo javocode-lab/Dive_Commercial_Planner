@@ -117,6 +117,8 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
           minMinutes={1}
           maxMinutes={720}
           quickOptions={TIME_OPTIONS}
+          allowEmpty
+          placeholder="01:30"
           onChange={(bottomTime) => onChange({ bottomTime })}
         />
       </div>
