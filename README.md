@@ -1,25 +1,31 @@
-# DIVE Commercial Planner — Recreational Mode v2.3
+# DIVE Commercial Planner — Recreational Mode v2.5.2
 
-Prototipo funcional para planificación recreativa simple con aire.
+Prototipo funcional para planificación recreativa con aire, inmersión simple y primera versión de buceo repetitivo.
 
-## Alcance v2.3
+## Alcance v2.5
 
 - Modo recreativo.
 - Gas: aire.
 - Unidades: métrico e imperial.
-- Tabla activa: CMAS/FEDECAS Tabla I.
+- Tabla activa para inmersión simple: CMAS/FEDECAS Tabla I.
+- Tabla activa para intervalo en superficie: CMAS/FEDECAS Tabla II.
+- Tabla activa para nitrógeno residual: CMAS/FEDECAS Tabla III.
 - Profundidad máxima operativa: 39 m / 130 ft.
-- Profundidad: se redondea siempre hacia arriba a la siguiente columna de tabla.
+- Profundidad: se redondea siempre hacia arriba a la siguiente columna/fila disponible.
 - Tiempo de fondo: se evalúa exacto contra el límite tabular.
 - Resultado simple + vista oficial **Detalle del cálculo**.
-- Base estructural para **grupo de presión final** desde Tabla I.
-- Los rangos A-M de grupos de presión todavía quedan pendientes de carga y validación por Wili.
-- Tabla II y Tabla III quedan reservadas para inmersiones repetitivas.
+- Grupo de presión final de la primera inmersión.
+- Entrada de intervalo en superficie: tiempo que el usuario permaneció fuera del agua.
+- Nuevo grupo de presión después del intervalo.
+- Nitrógeno residual expresado en minutos según Tabla III.
+- Límite ajustado sin descompresión para segunda inmersión cuando la celda lo permite.
 - Checklist de validación manual.
 
 ## Advertencia
 
 Esta app es una herramienta de planificación y verificación. No reemplaza formación, tablas oficiales, ordenador de buceo, procedimientos, supervisión ni criterio profesional.
+
+El “nitrógeno residual” se muestra como **tiempo de nitrógeno residual en minutos según Tabla III**. No debe interpretarse como medición médica directa de nitrógeno en sangre.
 
 ## Scripts
 
@@ -30,7 +36,7 @@ npm run test
 npm run build
 ```
 
-## Dataset v2.3 — Tabla I / NDL
+## Dataset v2.5 — Tabla I / NDL
 
 ```text
 9 m / 30 ft    → 250 min
@@ -47,28 +53,54 @@ npm run build
 39 m / 130 ft  → 5 min
 ```
 
-## Estado de grupos repetitivos
+## Repetitivas v2.5
 
-v2.3 prepara la estructura para el grupo de presión final, pero no asigna letras todavía.
+Flujo implementado:
 
-Próxima fase:
+```text
+Primera inmersión
+→ profundidad
+→ tiempo de fondo
+→ límite Tabla I
+→ grupo de presión final
 
-1. Digitalizar rangos de tiempo → grupo A-M desde Tabla I.
-2. Validar esos rangos con Wili.
-3. Activar `finalPressureGroup.group`.
-4. Recién después avanzar con Tabla II y Tabla III para repetitivas.
+Intervalo en superficie
+→ tiempo fuera del agua
+→ Tabla II
+→ nuevo grupo de presión
+
+Segunda inmersión
+→ profundidad planificada
+→ tiempo de fondo planificado
+→ Tabla III
+→ nitrógeno residual en minutos
+→ límite ajustado
+→ tiempo equivalente total
+```
+
+## Estado de validación
+
+- Tabla I: límites NDL confirmados para prototipo por Fernando/Wili.
+- Tabla I: grupos de presión cargados desde la imagen fuente, pendientes de auditoría final fila por fila.
+- Tabla II: rangos de intervalo en superficie cargados desde la imagen fuente, pendientes de auditoría final fila por fila.
+- Tabla III: nitrógeno residual y límites ajustados cargados desde la imagen fuente, pendientes de auditoría final fila por fila.
+
+## Regla de seguridad
+
+No usar esta versión como única fuente para planificar o ejecutar inmersiones reales. Toda salida debe validarse manualmente contra la fuente técnica, criterio profesional y condiciones reales.
 
 
-## v2.3 - Pressure Group Assignment
+## v2.5.1 — Unified duration UX
 
-Se cargaron los rangos de grupo de presión final de Tabla I para el prototipo recreativo con aire.
+- Tiempo de fondo, intervalo en superficie y segundo tiempo de fondo se presentan como un único dato de duración.
+- Formato visible: `HH h MM min`.
+- La edición se realiza dentro de un selector único de duración, con horas y minutos claramente rotulados.
+- El motor continúa recibiendo minutos totales; no cambia ninguna regla de cálculo.
 
-Reglas implementadas:
+## v2.5.2 — Single HH:MM duration input
 
-- La profundidad se redondea hacia arriba antes de consultar Tabla I.
-- El tiempo de fondo se evalúa exacto, sin redondeo.
-- Si el tiempo excede el límite NDL, no se asigna grupo de presión final.
-- Si el tiempo queda dentro del límite, se asigna letra A-M según el rango de la profundidad efectiva.
-- Tabla II y Tabla III siguen reservadas para la fase de inmersiones repetitivas completas.
-
-Estado de validación: dataset candidato cargado para revisión manual de Wili contra la imagen fuente.
+- Los tiempos se cargan ahora en un único campo `HH:MM`.
+- Ejemplo visible: `01:30 = 1 h 30 min`.
+- Se mantienen los botones rápidos con etiquetas explícitas como `1 h 30 min`.
+- El motor continúa recibiendo minutos totales; no cambia ninguna regla de cálculo.
+- La misma UX se usa para tiempo de fondo, intervalo en superficie y segunda inmersión.

@@ -39,15 +39,30 @@ const CATEGORY_META: Partial<Record<CalculationStepCategory, CalculationSectionM
   pressureGroup: {
     order: "6",
     title: "Grupo de presión final",
-    description: "Base preparada para repetitivas. En esta versión se informa si la asignación de letra está disponible o pendiente de dataset.",
+    description: "Letra de clasificación al final de la inmersión simple, calculada desde Tabla I.",
+  },
+  surfaceInterval: {
+    order: "7",
+    title: "Intervalo en superficie",
+    description: "Consulta de Tabla II para transformar el grupo final de la primera inmersión en nuevo grupo de presión.",
+  },
+  residualNitrogen: {
+    order: "8",
+    title: "Nitrógeno residual",
+    description: "Consulta de Tabla III para expresar el nitrógeno residual como tiempo equivalente en minutos.",
+  },
+  repetitiveDive: {
+    order: "9",
+    title: "Buceo repetitivo",
+    description: "Evaluación de segunda inmersión con nitrógeno residual, tiempo equivalente total y límite ajustado.",
   },
   comparison: {
-    order: "7",
+    order: "10",
     title: "Cálculo",
     description: "Comparación exacta entre tiempo de fondo ingresado y límite tabular encontrado.",
   },
   result: {
-    order: "8",
+    order: "11",
     title: "Resultado",
     description: "Estado final producido por el motor y advertencias asociadas.",
   },
@@ -60,6 +75,9 @@ const CATEGORY_ORDER: CalculationStepCategory[] = [
   "rounding",
   "lookup",
   "pressureGroup",
+  "surfaceInterval",
+  "residualNitrogen",
+  "repetitiveDive",
   "comparison",
   "result",
 ];

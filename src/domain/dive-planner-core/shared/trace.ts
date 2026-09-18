@@ -5,6 +5,9 @@ export type CalculationStepCategory =
   | "rounding"
   | "lookup"
   | "pressureGroup"
+  | "surfaceInterval"
+  | "residualNitrogen"
+  | "repetitiveDive"
   | "comparison"
   | "result"
   | "source";
