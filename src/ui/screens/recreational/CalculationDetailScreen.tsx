@@ -109,7 +109,7 @@ function shouldShowStepTitle(stepTitle: string, categoryTitle: string): boolean 
 
 export function CalculationDetailScreen({ result, onBack, onValidate }: Props) {
   return (
-    <section className="screen">
+    <section className="screen screen--calculation-detail">
       <StepHeader
         title="Detalle del cálculo"
         subtitle="Procedimiento auditable generado por el motor. Esta vista debe ser revisada manualmente antes de cualquier decisión operativa."

@@ -1,36 +1,28 @@
-# DIVE Commercial Planner — UX patch
+# DIVE Commercial Planner — v2.5.3 responsive calculation detail
 
-Cambios incluidos:
+Corrección UX responsive para la pantalla **Detalle del cálculo**.
 
-1. `Tiempo de fondo — primera inmersión` inicia vacío.
-   - No contiene un tiempo preseleccionado.
-   - `01:30` se muestra solo como ejemplo/placeholder.
-   - El botón Calcular permanece deshabilitado hasta ingresar un tiempo válido o elegir un valor rápido.
-   - Los botones rápidos conservan etiquetas explícitas (`1 h 30 min`, etc.).
+## Cambios
 
-2. Selector de tema simplificado.
-   - Se reemplazan `Navy / Light` y la etiqueta `Tema` por un único botón circular.
-   - En tema oscuro muestra el icono de sol para pasar a claro.
-   - En tema claro muestra el icono de luna para pasar a oscuro.
-   - Mantiene `aria-label` y `title` para accesibilidad.
+- La pantalla ahora tiene una clase específica `screen--calculation-detail`.
+- Se eliminan desbordes horizontales en móvil mediante `min-width: 0`, `max-width: 100%` y wrapping seguro.
+- Cards de pasos y Fuente técnica pasan a una sola columna en pantallas angostas.
+- Los textos largos de dataset, motor, fuente y pasos pueden cortar línea sin ensanchar la página.
+- Se reducen paddings/radios/tipografías en móvil para aprovechar mejor 320–640 px.
+- Los pasos numerados usan `minmax(0, 1fr)` para que la columna de contenido pueda encogerse.
+- La barra inferior conserva ambas acciones y ajusta labels en pantallas muy angostas.
 
 ## Archivos afectados
 
-- `src/ui/App.tsx`
-- `src/ui/components/DurationInput.tsx`
-- `src/ui/components/ThemeToggle.tsx`
-- `src/ui/screens/recreational/RecreationalPlanScreen.tsx`
+- `src/ui/screens/recreational/CalculationDetailScreen.tsx`
 - `src/ui/styles/global.css`
 
-## Aplicación
-
-Copiar estos archivos sobre el proyecto actual conservando la estructura de carpetas.
-No reemplaza `package.json` ni `package-lock.json` para no interferir con actualizaciones de dependencias locales.
-
-Luego ejecutar:
+## Validación local recomendada
 
 ```bash
 npm run test
 npm run build
 npm run dev
 ```
+
+Probar especialmente con DevTools en 320 px, 360 px, 390 px y 430 px de ancho.
