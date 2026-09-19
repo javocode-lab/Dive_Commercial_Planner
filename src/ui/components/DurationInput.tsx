@@ -30,12 +30,44 @@ export function formatDurationInput(minutes: number): string {
   return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
 
+/**
+ * Accepts both explicit HH:MM and compact numeric entry:
+ *   5    -> 00:05
+ *   45   -> 00:45
+ *   145  -> 01:45
+ *   230  -> 02:30
+ *   1015 -> 10:15
+ *
+ * When a colon is used, one or two hour digits are accepted as well:
+ *   1:45 -> 01:45
+ */
 export function parseDurationInput(value: string): number | null {
-  const match = value.trim().match(/^(\d{1,3}):(\d{2})$/);
-  if (!match) return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
 
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
+  let hours: number;
+  let minutes: number;
+
+  if (trimmed.includes(":")) {
+    const match = trimmed.match(/^(\d{1,2}):(\d{1,2})$/);
+    if (!match) return null;
+
+    hours = Number(match[1]);
+    minutes = Number(match[2]);
+  } else {
+    if (!/^\d{1,4}$/.test(trimmed)) return null;
+
+    if (trimmed.length <= 2) {
+      hours = 0;
+      minutes = Number(trimmed);
+    } else if (trimmed.length === 3) {
+      hours = Number(trimmed.slice(0, 1));
+      minutes = Number(trimmed.slice(1));
+    } else {
+      hours = Number(trimmed.slice(0, 2));
+      minutes = Number(trimmed.slice(2));
+    }
+  }
 
   if (!Number.isInteger(hours) || !Number.isInteger(minutes) || minutes < 0 || minutes > 59) {
     return null;
@@ -44,11 +76,18 @@ export function parseDurationInput(value: string): number | null {
   return hours * 60 + minutes;
 }
 
-function applyDurationMask(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 4);
+function sanitizeDurationDraft(value: string): string {
+  const filtered = value.replace(/[^\d:]/g, "");
 
-  if (digits.length <= 2) return digits;
-  return `${digits.slice(0, 2)}:${digits.slice(2)}`;
+  if (!filtered.includes(":")) {
+    return filtered.replace(/\D/g, "").slice(0, 4);
+  }
+
+  const firstColonIndex = filtered.indexOf(":");
+  const hours = filtered.slice(0, firstColonIndex).replace(/\D/g, "").slice(0, 2);
+  const minutes = filtered.slice(firstColonIndex + 1).replace(/\D/g, "").slice(0, 2);
+
+  return `${hours}:${minutes}`;
 }
 
 export function DurationInput({
@@ -91,7 +130,7 @@ export function DurationInput({
     const parsed = parseDurationInput(rawValue);
 
     if (parsed === null) {
-      setError(`Usá el formato HH:MM. Ejemplo: ${placeholder}.`);
+      setError("Ingresá HH:MM o escribí los números seguidos. Ejemplo: 145 = 01:45.");
       return false;
     }
 
@@ -107,23 +146,21 @@ export function DurationInput({
   };
 
   const handleTextChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const masked = applyDurationMask(event.target.value);
-    setDraftValue(masked);
+    const nextDraft = sanitizeDurationDraft(event.target.value);
+    setDraftValue(nextDraft);
     setError(null);
 
-    if (allowEmpty && masked === "") {
+    // Do not normalize while the user is still typing. This is important for
+    // compact entries such as 1015 -> 10:15; formatting after the third digit
+    // would otherwise interrupt the fourth keystroke.
+    if (allowEmpty && nextDraft === "") {
       onChange(0);
-      return;
-    }
-
-    const parsed = parseDurationInput(masked);
-    if (parsed !== null && parsed >= minMinutes && parsed <= maxMinutes) {
-      onChange(parsed);
     }
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
+      event.preventDefault();
       event.currentTarget.blur();
     }
   };
@@ -178,8 +215,8 @@ export function DurationInput({
         aria-live="polite"
       >
         {error ?? (isEmpty
-          ? `Ejemplo: ${placeholder} = 1 h 30 min`
-          : `Ejemplo: ${placeholder} = 1 h 30 min · Valor actual: ${formatDuration(safeValue)}`)}
+          ? "Podés escribir 145 → 01:45 (1 h 45 min)."
+          : `Podés escribir 145 → 01:45 · Valor actual: ${formatDuration(safeValue)}`)}
       </small>
 
       {quickOptions.length > 0 && (
