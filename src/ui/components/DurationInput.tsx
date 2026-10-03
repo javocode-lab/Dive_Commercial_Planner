@@ -1,4 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type KeyboardEvent } from "react";
+import { interpolate, useI18n } from "../../i18n/I18nProvider";
 
 type DurationInputProps = {
   label: string;
@@ -101,6 +102,7 @@ export function DurationInput({
   allowEmpty = false,
   placeholder = "01:30"
 }: DurationInputProps) {
+  const { copy } = useI18n();
   const isEmpty = allowEmpty && valueMinutes <= 0;
   const safeValue = isEmpty ? 0 : clamp(Math.floor(valueMinutes), minMinutes, maxMinutes);
   const [draftValue, setDraftValue] = useState(() => (isEmpty ? "" : formatDurationInput(safeValue)));
@@ -130,12 +132,12 @@ export function DurationInput({
     const parsed = parseDurationInput(rawValue);
 
     if (parsed === null) {
-      setError("Ingresá HH:MM o escribí los números seguidos. Ejemplo: 145 = 01:45.");
+      setError(copy.duration.invalidFormat);
       return false;
     }
 
     if (parsed < minMinutes || parsed > maxMinutes) {
-      setError(`La duración debe estar entre ${formatDuration(minMinutes)} y ${formatDuration(maxMinutes)}.`);
+      setError(interpolate(copy.duration.range, { min: formatDuration(minMinutes), max: formatDuration(maxMinutes) }));
       return false;
     }
 
@@ -215,14 +217,14 @@ export function DurationInput({
         aria-live="polite"
       >
         {error ?? (isEmpty
-          ? "Podés escribir 145 → 01:45 (1 h 45 min)."
-          : `Podés escribir 145 → 01:45 · Valor actual: ${formatDuration(safeValue)}`)}
+          ? copy.duration.emptyHint
+          : interpolate(copy.duration.currentHint, { value: formatDuration(safeValue) }))}
       </small>
 
       {quickOptions.length > 0 && (
         <div
           className="quick-select-grid quick-select-grid--dense duration-input__quick-options"
-          aria-label={`Valores rápidos para ${label.toLowerCase()}`}
+          aria-label={interpolate(copy.duration.quickValues, { label: label.toLowerCase() })}
         >
           {quickOptions.map((option) => (
             <button

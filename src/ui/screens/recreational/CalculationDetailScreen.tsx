@@ -1,72 +1,10 @@
 import type { CalculationStepCategory } from "../../../domain/dive-planner-core/shared/trace";
 import type { RecreationalAirDiveResult } from "../../../domain/dive-planner-core/recreational/air/recreationalAirTypes";
+import { useI18n } from "../../../i18n/I18nProvider";
+import { localizedStep, localizedValidationStatus } from "../../../i18n/domainPresentation";
 import { NoticeBox } from "../../components/NoticeBox";
 import { PrimaryActionBar } from "../../components/PrimaryActionBar";
 import { StepHeader } from "../../components/StepHeader";
-
-type CalculationSectionMeta = {
-  order: string;
-  title: string;
-  description: string;
-};
-
-const CATEGORY_META: Partial<Record<CalculationStepCategory, CalculationSectionMeta>> = {
-  input: {
-    order: "1",
-    title: "Datos ingresados",
-    description: "Valores originales recibidos por el motor antes de aplicar validaciones, conversiones o reglas.",
-  },
-  conversion: {
-    order: "2",
-    title: "Conversión y normalización",
-    description: "Cómo se interpretó la profundidad según el sistema de unidades seleccionado.",
-  },
-  validation: {
-    order: "3",
-    title: "Validaciones",
-    description: "Controles previos que determinan si el caso puede evaluarse con la tabla activa.",
-  },
-  rounding: {
-    order: "4",
-    title: "Redondeos aplicados",
-    description: "Reglas conservadoras usadas para elegir la profundidad efectiva de tabla.",
-  },
-  lookup: {
-    order: "5",
-    title: "Búsqueda en tabla",
-    description: "Fila/columna utilizada por el motor para recuperar el límite correspondiente.",
-  },
-  pressureGroup: {
-    order: "6",
-    title: "Grupo de presión final",
-    description: "Letra de clasificación al final de la inmersión simple, calculada desde Tabla I.",
-  },
-  surfaceInterval: {
-    order: "7",
-    title: "Intervalo en superficie",
-    description: "Consulta de Tabla II para transformar el grupo final de la primera inmersión en nuevo grupo de presión.",
-  },
-  residualNitrogen: {
-    order: "8",
-    title: "Nitrógeno residual",
-    description: "Consulta de Tabla III para expresar el nitrógeno residual como tiempo equivalente en minutos.",
-  },
-  repetitiveDive: {
-    order: "9",
-    title: "Buceo repetitivo",
-    description: "Evaluación de segunda inmersión con nitrógeno residual, tiempo equivalente total y límite ajustado.",
-  },
-  comparison: {
-    order: "10",
-    title: "Cálculo",
-    description: "Comparación exacta entre tiempo de fondo ingresado y límite tabular encontrado.",
-  },
-  result: {
-    order: "11",
-    title: "Resultado",
-    description: "Estado final producido por el motor y advertencias asociadas.",
-  },
-};
 
 const CATEGORY_ORDER: CalculationStepCategory[] = [
   "input",
@@ -88,11 +26,20 @@ type Props = {
   onValidate: () => void;
 };
 
-function normalizeLabel(value: string): string {
-  return value
-    .replace(/^\d+\.\s*/, "")
-    .trim()
-    .toLocaleLowerCase("es-AR");
+
+function splitDatasetVersion(datasetVersion: string): string[] {
+  return datasetVersion
+    .split(/\s+\+\s+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function getDatasetLabel(dataset: string, locale: "pt-BR" | "es-AR"): string {
+  const normalized = dataset.toLowerCase();
+  if (normalized.includes("table_iii")) return locale === "pt-BR" ? "Tabela III" : "Tabla III";
+  if (normalized.includes("table_ii")) return locale === "pt-BR" ? "Tabela II" : "Tabla II";
+  if (normalized.includes("table_i")) return locale === "pt-BR" ? "Tabela I" : "Tabla I";
+  return "Dataset";
 }
 
 function splitDetail(detail: string): string[] {
@@ -103,30 +50,34 @@ function splitDetail(detail: string): string[] {
     .filter(Boolean);
 }
 
-function shouldShowStepTitle(stepTitle: string, categoryTitle: string): boolean {
-  return normalizeLabel(stepTitle) !== normalizeLabel(categoryTitle);
-}
-
 export function CalculationDetailScreen({ result, onBack, onValidate }: Props) {
+  const { locale, copy } = useI18n();
+
+  const categoryMeta = (category: CalculationStepCategory) => {
+    const entry = copy.detail.categories[category as keyof typeof copy.detail.categories];
+    if (!entry) return null;
+    return { title: entry[0], description: entry[1] };
+  };
+
+  const sourceName = locale === "pt-BR" ? "CMAS/FEDECAS - Tabelas para Mergulho Recreativo" : result.sourceReference.name;
+  const tableName = locale === "pt-BR"
+    ? "Tabela I - Limites de tempo e letra de classificação ao final do mergulho"
+    : result.sourceReference.table;
+  const sourceVersion = locale === "pt-BR" ? result.sourceReference.version.replace("prototipo", "protótipo") : result.sourceReference.version;
+  const sourceBasis = locale === "pt-BR"
+    ? "Baseado em tabelas da U.S. Navy, conforme documento de referência compartilhado para validação do protótipo."
+    : result.sourceReference.basis;
+  const datasetEntries = splitDatasetVersion(result.datasetVersion);
+
   return (
     <section className="screen screen--calculation-detail">
-      <StepHeader
-        title="Detalle del cálculo"
-        subtitle="Procedimiento auditable generado por el motor. Esta vista debe ser revisada manualmente antes de cualquier decisión operativa."
-        currentStep={3}
-        totalSteps={4}
-        onBack={onBack}
-      />
+      <StepHeader title={copy.detail.title} subtitle={copy.detail.subtitle} currentStep={3} totalSteps={4} onBack={onBack} />
 
-      <NoticeBox
-        tone="warning"
-        title="Trazabilidad"
-        message="La UI no reconstruye la explicación: muestra los pasos devueltos por el motor de cálculo."
-      />
+      <NoticeBox tone="warning" title={copy.detail.traceTitle} message={copy.detail.traceMessage} />
 
       <div className="calculation-detail-stack">
-        {CATEGORY_ORDER.map((category) => {
-          const meta = CATEGORY_META[category];
+        {CATEGORY_ORDER.map((category, categoryIndex) => {
+          const meta = categoryMeta(category);
           if (!meta) return null;
 
           const steps = result.calculationSteps.filter((step) => step.category === category);
@@ -135,15 +86,16 @@ export function CalculationDetailScreen({ result, onBack, onValidate }: Props) {
           return (
             <section className="content-card calculation-section" key={category}>
               <header className="calculation-section__header">
-                <span className="calculation-section__eyebrow">Paso {meta.order}</span>
+                <span className="calculation-section__eyebrow">{copy.common.step} {categoryIndex + 1}</span>
                 <h2>{meta.title}</h2>
                 <p>{meta.description}</p>
               </header>
 
               <div className="calculation-step-list calculation-step-list--spacious">
                 {steps.map((step, index) => {
-                  const showTitle = shouldShowStepTitle(step.title, meta.title);
-                  const detailLines = splitDetail(step.detail);
+                  const localized = localizedStep(step, locale);
+                  const detailLines = splitDetail(localized.detail);
+                  const showTitle = localized.title.trim().toLocaleLowerCase(locale) !== meta.title.trim().toLocaleLowerCase(locale);
 
                   return (
                     <article
@@ -151,14 +103,10 @@ export function CalculationDetailScreen({ result, onBack, onValidate }: Props) {
                       key={step.id}
                     >
                       {steps.length > 1 ? <span className="calculation-step__index">{index + 1}</span> : null}
-
                       <div className="calculation-step__body">
-                        {showTitle ? <strong>{step.title}</strong> : null}
-
+                        {showTitle ? <strong>{localized.title}</strong> : null}
                         <ul className="calculation-step__lines">
-                          {detailLines.map((line) => (
-                            <li key={line}>{line}</li>
-                          ))}
+                          {detailLines.map((line, lineIndex) => <li key={`${step.id}-${lineIndex}`}>{line}</li>)}
                         </ul>
                       </div>
                     </article>
@@ -172,46 +120,32 @@ export function CalculationDetailScreen({ result, onBack, onValidate }: Props) {
 
       <section className="content-card calculation-source-card">
         <header className="calculation-section__header">
-          <span className="calculation-section__eyebrow">Trazabilidad</span>
-          <h2>Fuente técnica</h2>
-          <p>Referencia conservada para auditoría del cálculo y revisión manual.</p>
+          <span className="calculation-section__eyebrow">{copy.detail.traceTitle}</span>
+          <h2>{copy.detail.technicalSource}</h2>
+          <p>{copy.detail.technicalSourceDescription}</p>
         </header>
 
         <div className="calculation-source-grid">
-          <div>
-            <span>Fuente</span>
-            <strong>{result.sourceReference.name}</strong>
+          <div><span>{copy.common.source}</span><strong>{sourceName}</strong></div>
+          <div><span>{copy.detail.tableUsed}</span><strong>{tableName}</strong></div>
+          <div><span>{copy.detail.versionBasis}</span><strong>{sourceVersion}</strong><small>{sourceBasis}</small></div>
+          <div className="calculation-source-grid__full calculation-source-datasets">
+            <span>{copy.common.dataset}</span>
+            <div className="dataset-version-list">
+              {datasetEntries.map((dataset) => (
+                <div className="dataset-version-item" key={dataset}>
+                  <small>{getDatasetLabel(dataset, locale)}</small>
+                  <strong>{dataset}</strong>
+                </div>
+              ))}
+            </div>
           </div>
-          <div>
-            <span>Tabla utilizada</span>
-            <strong>{result.sourceReference.table}</strong>
-          </div>
-          <div>
-            <span>Versión / base</span>
-            <strong>{result.sourceReference.version}</strong>
-            <small>{result.sourceReference.basis}</small>
-          </div>
-          <div>
-            <span>Dataset</span>
-            <strong>{result.datasetVersion}</strong>
-          </div>
-          <div>
-            <span>Motor</span>
-            <strong>{result.engineVersion}</strong>
-          </div>
-          <div>
-            <span>Validación</span>
-            <strong>{result.sourceReference.validationStatus}</strong>
-          </div>
+          <div><span>{copy.common.engine}</span><strong>{result.engineVersion}</strong></div>
+          <div><span>{copy.common.validation}</span><strong>{localizedValidationStatus(result.sourceReference.validationStatus, locale)}</strong></div>
         </div>
       </section>
 
-      <PrimaryActionBar
-        secondaryLabel="Resultado"
-        primaryLabel="Validación manual"
-        onSecondary={onBack}
-        onPrimary={onValidate}
-      />
+      <PrimaryActionBar secondaryLabel={copy.common.result} primaryLabel={copy.common.manualValidation} onSecondary={onBack} onPrimary={onValidate} />
     </section>
   );
 }

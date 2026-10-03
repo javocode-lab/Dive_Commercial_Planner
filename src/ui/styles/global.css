@@ -162,11 +162,54 @@ small {
   align-content: center;
 }
 
-.theme-toggle {
+.app-controls {
   position: fixed;
   z-index: 20;
   top: 14px;
   right: max(16px, calc((100vw - 840px) / 2 + 16px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle {
+  position: static;
+}
+
+.language-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-strong) 90%, transparent);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(18px);
+}
+
+.language-toggle__button {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted-strong);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.language-toggle__button--active {
+  background: var(--accent-soft);
+  color: var(--text-strong);
+}
+
+.language-toggle__button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  outline-offset: 2px;
 }
 
 .theme-toggle__button {
@@ -1075,182 +1118,392 @@ small {
   }
 }
 
+/* BETA-01.1 — Visual polish / responsive refinement */
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
 
-/* Recreational Mode v2.5.3 — Responsive Calculation Detail */
-.screen--calculation-detail,
-.screen--calculation-detail > *,
-.calculation-detail-stack,
+body {
+  min-width: 0;
+}
+
+.app-shell {
+  width: min(100%, 1100px);
+  padding: 78px clamp(16px, 3vw, 32px) calc(132px + env(safe-area-inset-bottom));
+}
+
+.screen {
+  width: min(100%, 960px);
+  min-width: 0;
+  margin-inline: auto;
+  gap: clamp(16px, 2.4vw, 22px);
+}
+
+.screen > *,
+.content-card,
+.notice-box,
+.summary-card,
 .calculation-section,
-.calculation-section__header,
-.calculation-step-list,
+.calculation-source-card,
 .calculation-step,
 .calculation-step__body,
-.calculation-source-card,
 .calculation-source-grid,
-.calculation-source-grid > div {
+.calculation-source-grid > div,
+.duration-input,
+.wide-card,
+.check-card,
+.selection-card {
   min-width: 0;
   max-width: 100%;
 }
 
-.screen--calculation-detail {
-  width: 100%;
-  overflow-x: clip;
+.content-card,
+.notice-box,
+.summary-card {
+  padding: clamp(16px, 2.4vw, 22px);
 }
 
-.calculation-section__header h2,
-.calculation-section__header p,
-.calculation-step__body strong,
-.calculation-step__lines li,
-.calculation-source-grid span,
-.calculation-source-grid strong,
-.calculation-source-grid small {
-  overflow-wrap: anywhere;
+.content-card {
+  gap: clamp(12px, 2vw, 16px);
+}
+
+.app-controls {
+  right: max(clamp(16px, 3vw, 32px), calc((100vw - 1100px) / 2 + 32px));
+}
+
+.brand-block {
+  gap: 12px;
+  max-width: 900px;
+}
+
+.brand-block h1 {
+  max-width: 13ch;
+  font-size: clamp(2.55rem, 9vw, 5.15rem);
+  line-height: 0.94;
+  letter-spacing: -0.055em;
+  overflow-wrap: normal;
   word-break: normal;
+  hyphens: none;
 }
 
-.calculation-step__lines li {
+.brand-subtitle {
+  max-width: 52rem;
+  color: var(--accent);
+  font-size: clamp(0.95rem, 2.4vw, 1.08rem);
+  font-weight: 900;
+  letter-spacing: clamp(0.05em, 0.8vw, 0.11em);
+  line-height: 1.55;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+
+.step-header,
+.step-header__topline,
+.step-header h1,
+.step-header p {
   min-width: 0;
 }
 
+.step-header h1 {
+  max-width: 17ch;
+  overflow-wrap: anywhere;
+}
+
+.step-header p,
+.calculation-section__header p,
+.notice-box p,
+.content-card p,
+.clean-list li,
+.summary-card strong,
+.summary-card small,
+.calculation-step__lines li,
+.calculation-source-grid strong,
+.calculation-source-grid small {
+  overflow-wrap: anywhere;
+}
+
+.summary-grid {
+  gap: clamp(10px, 1.7vw, 14px);
+}
+
+.summary-card {
+  align-content: start;
+}
+
+.summary-card strong {
+  line-height: 1.25;
+}
+
+.calculation-detail-stack {
+  gap: clamp(16px, 2.4vw, 22px);
+}
+
+.screen--calculation-detail {
+  width: min(100%, 980px);
+}
+
+.calculation-section,
+.calculation-source-card {
+  gap: clamp(16px, 2vw, 20px);
+  padding: clamp(16px, 2.5vw, 24px);
+}
+
+.calculation-section__header {
+  gap: 8px;
+}
+
+.calculation-section__header h2 {
+  font-size: clamp(1.12rem, 2.2vw, 1.3rem);
+}
+
+.calculation-section__header p {
+  max-width: 72ch;
+}
+
+.calculation-step-list--spacious {
+  gap: clamp(12px, 1.7vw, 16px);
+}
+
+.calculation-step--detail {
+  padding: clamp(14px, 2vw, 18px);
+}
+
+.calculation-step--with-index {
+  gap: 14px;
+}
+
+.calculation-source-grid {
+  gap: clamp(10px, 1.7vw, 14px);
+}
+
 .calculation-source-grid > div {
-  overflow: hidden;
+  padding: clamp(13px, 1.8vw, 16px);
+}
+
+.calculation-source-grid__full {
+  grid-column: 1 / -1;
+}
+
+.calculation-source-datasets {
+  gap: 10px !important;
+}
+
+.dataset-version-list {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.dataset-version-item {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-strong) 54%, transparent);
+}
+
+.dataset-version-item small {
+  color: var(--accent-2);
+  font-size: 0.76rem;
+  font-weight: 950;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.dataset-version-item strong {
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.primary-action-bar {
+  z-index: 40;
+  width: min(100%, 1100px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px clamp(16px, 3vw, 32px) calc(12px + env(safe-area-inset-bottom));
+}
+
+.primary-action-bar .primary-button,
+.primary-action-bar .secondary-button {
+  min-width: 0;
+  min-height: 52px;
+  padding: 10px 12px;
+  line-height: 1.15;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.dual-actions > * {
+  min-width: 0;
+  white-space: normal;
+}
+
+@media (min-width: 720px) {
+  .app-shell {
+    padding-top: 88px;
+  }
+
+  .screen--hero {
+    width: min(100%, 1000px);
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .calculation-source-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-shell {
+    padding-top: 96px;
+  }
+
+  .screen--hero {
+    min-height: calc(100vh - 220px);
+  }
+
+  .content-card,
+  .notice-box,
+  .summary-card {
+    border-radius: 24px;
+  }
 }
 
 @media (max-width: 640px) {
-  .screen--calculation-detail {
-    gap: 14px;
+  .app-shell {
+    padding-top: 72px;
+    padding-inline: 16px;
+    padding-bottom: calc(138px + env(safe-area-inset-bottom));
   }
 
-  .screen--calculation-detail .step-header {
-    gap: 8px;
-  }
-
-  .screen--calculation-detail .step-header h1 {
-    max-width: 100%;
-    font-size: clamp(1.8rem, 9vw, 2.45rem);
-    line-height: 1;
-  }
-
-  .screen--calculation-detail .step-header > p {
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-
-  .calculation-detail-stack {
-    gap: 12px;
-  }
-
-  .calculation-section,
-  .calculation-source-card {
-    width: 100%;
-    padding: 15px;
-    border-radius: 18px;
-  }
-
-  .calculation-section__header {
+  .app-controls {
+    top: 12px;
+    right: 16px;
     gap: 6px;
   }
 
-  .calculation-section__header p {
+  .language-toggle {
+    min-height: 42px;
+  }
+
+  .language-toggle__button {
+    min-width: 36px;
+    min-height: 34px;
+    padding-inline: 8px;
+  }
+
+  .theme-toggle__button {
+    width: 42px;
+    height: 42px;
+  }
+
+  .screen--hero {
+    min-height: auto;
+    align-content: start;
+    padding-top: 14px;
+  }
+
+  .brand-block h1 {
+    max-width: 11ch;
+    font-size: clamp(2.65rem, 13.2vw, 4.1rem);
+  }
+
+  .brand-subtitle {
     font-size: 0.92rem;
+    letter-spacing: 0.07em;
   }
 
-  .calculation-step-list--spacious {
-    gap: 10px;
+  .content-card,
+  .notice-box,
+  .summary-card,
+  .calculation-section,
+  .calculation-source-card {
+    padding: 16px;
+    border-radius: 18px;
   }
 
-  .calculation-step--detail,
+  .step-header {
+    gap: 9px;
+  }
+
+  .step-header h1 {
+    max-width: 100%;
+    font-size: clamp(1.9rem, 9.2vw, 2.65rem);
+    line-height: 1;
+  }
+
+  .calculation-source-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calculation-source-grid__full {
+    grid-column: auto;
+  }
+
   .calculation-step--with-index {
-    width: 100%;
-    padding: 13px;
-    border-radius: 15px;
-  }
-
-  .calculation-step--with-index {
-    grid-template-columns: 28px minmax(0, 1fr);
+    grid-template-columns: 1fr;
     gap: 10px;
   }
 
   .calculation-step__index {
-    min-width: 28px;
-    width: 28px;
-    height: 28px;
-    font-size: 0.76rem;
-  }
-
-  .calculation-step__body {
-    gap: 8px;
-  }
-
-  .calculation-step__lines {
-    gap: 7px;
-  }
-
-  .calculation-step__lines li {
-    padding-left: 14px;
-    font-size: 0.94rem;
-    line-height: 1.5;
-  }
-
-  .calculation-source-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
-  }
-
-  .calculation-source-grid > div {
-    padding: 12px;
-    border-radius: 14px;
-  }
-
-  .calculation-source-grid strong,
-  .calculation-source-grid small {
-    white-space: normal;
-  }
-
-  }
-
-@media (max-width: 390px) {
-  .app-shell {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
-  .screen--calculation-detail .step-header__topline {
-    gap: 8px;
-  }
-
-  .screen--calculation-detail .step-header__progress {
-    flex: 0 0 auto;
-    padding: 6px 9px;
-    font-size: 0.8rem;
-  }
-
-  .calculation-section,
-  .calculation-source-card {
-    padding: 13px;
-    border-radius: 16px;
-  }
-
-  .calculation-section__eyebrow {
-    padding: 4px 8px;
-    font-size: 0.7rem;
-  }
-
-  .calculation-step--detail,
-  .calculation-step--with-index {
-    padding: 11px;
+    width: 30px;
   }
 
   .primary-action-bar {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    padding-right: 12px;
-    padding-left: 12px;
+    width: 100%;
+    padding-inline: 12px;
+    gap: 8px;
   }
 
-  .screen--calculation-detail .primary-action-bar .primary-button,
-  .screen--calculation-detail .primary-action-bar .secondary-button {
+  .primary-action-bar .primary-button,
+  .primary-action-bar .secondary-button {
+    min-height: 50px;
+    padding-inline: 8px;
+    font-size: clamp(0.82rem, 3.6vw, 0.95rem);
+  }
+
+  .dual-actions {
+    gap: 8px;
+  }
+
+  .dual-actions .secondary-button {
     min-width: 0;
-    padding-inline: 10px;
+    padding-inline: 9px;
     font-size: 0.9rem;
+    line-height: 1.2;
+    white-space: normal;
+  }
+}
+
+@media (max-width: 360px) {
+  .app-shell {
+    padding-inline: 14px;
+  }
+
+  .app-controls {
+    right: 14px;
+  }
+
+  .brand-block h1 {
+    font-size: clamp(2.35rem, 13vw, 3.35rem);
+  }
+
+  .primary-action-bar {
+    padding-inline: 10px;
+  }
+
+  .primary-action-bar .primary-button,
+  .primary-action-bar .secondary-button {
+    font-size: 0.8rem;
   }
 }

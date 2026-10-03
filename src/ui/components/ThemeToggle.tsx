@@ -1,3 +1,5 @@
+import { useI18n } from "../../i18n/I18nProvider";
+
 export type ThemeMode = "dark" | "light";
 
 type ThemeToggleProps = {
@@ -36,9 +38,10 @@ function MoonIcon() {
 }
 
 export function ThemeToggle({ theme, onChange }: ThemeToggleProps) {
+  const { copy } = useI18n();
   const isLight = theme === "light";
   const nextTheme: ThemeMode = isLight ? "dark" : "light";
-  const accessibleLabel = isLight ? "Cambiar a tema oscuro" : "Cambiar a tema claro";
+  const accessibleLabel = isLight ? copy.theme.toDark : copy.theme.toLight;
 
   return (
     <div className="theme-toggle">

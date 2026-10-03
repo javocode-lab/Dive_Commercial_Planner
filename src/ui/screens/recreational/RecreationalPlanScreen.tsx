@@ -1,4 +1,5 @@
 import type { ChangeEvent } from "react";
+import { useI18n } from "../../../i18n/I18nProvider";
 import type { RecreationalAirDiveInput } from "../../../domain/dive-planner-core/recreational/air/recreationalAirTypes";
 import type { UnitSystem } from "../../../domain/dive-planner-core/shared/units";
 import { DepthQuickSelect } from "../../components/DepthQuickSelect";
@@ -51,6 +52,7 @@ function safeNumber(value: string): number {
 }
 
 export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }: RecreationalPlanScreenProps) {
+  const { copy } = useI18n();
   const depthUnit = getDepthUnit(draft.unitSystem);
   const depthOptions = draft.unitSystem === "metric" ? METRIC_DEPTH_OPTIONS : IMPERIAL_DEPTH_OPTIONS;
   const maxDepth = draft.unitSystem === "metric" ? 45 : 150;
@@ -72,27 +74,27 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
   return (
     <section className="screen">
       <StepHeader
-        title="Plan recreativo con aire"
-        subtitle="Ingresá profundidad, tiempo de fondo y, si corresponde, datos de buceo repetitivo."
+        title={copy.plan.title}
+        subtitle={copy.plan.subtitle}
         currentStep={1}
         totalSteps={4}
         onBack={onBack}
       />
 
       <div className="content-card">
-        <h2>Sistema de unidades</h2>
+        <h2>{copy.plan.unitsTitle}</h2>
         <div className="stacked-options">
           <UnitSystemCard
-            title="Métrico"
-            description="Profundidad en metros"
-            example="Ejemplo: 18 m"
+            title={copy.common.metric}
+            description={copy.plan.metricDescription}
+            example={copy.plan.metricExample}
             selected={draft.unitSystem === "metric"}
             onSelect={() => selectUnitSystem("metric")}
           />
           <UnitSystemCard
-            title="Imperial"
-            description="Profundidad en pies"
-            example="Ejemplo: 60 ft"
+            title={copy.common.imperial}
+            description={copy.plan.imperialDescription}
+            example={copy.plan.imperialExample}
             selected={draft.unitSystem === "imperial"}
             onSelect={() => selectUnitSystem("imperial")}
           />
@@ -100,7 +102,7 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
       </div>
 
       <div className="content-card">
-        <h2>Primera inmersión</h2>
+        <h2>{copy.plan.firstDive}</h2>
         <DepthStepper
           value={draft.depth}
           unit={depthUnit}
@@ -111,8 +113,8 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
         />
         <DepthQuickSelect options={depthOptions} selectedValue={draft.depth} unit={depthUnit} onSelect={(depth) => onChange({ depth })} />
         <DurationInput
-          label="Tiempo de fondo — primera inmersión"
-          helper="Duración utilizada para el cálculo tabular."
+          label={copy.plan.firstBottomTime}
+          helper={copy.plan.bottomTimeHelper}
           valueMinutes={draft.bottomTime}
           minMinutes={1}
           maxMinutes={720}
@@ -124,7 +126,7 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
       </div>
 
       <div className="content-card">
-        <h2>Tipo de planificación</h2>
+        <h2>{copy.plan.planningType}</h2>
         <div className="stacked-options">
           <button
             className={draft.isRepetitive ? "wide-card" : "wide-card wide-card--selected"}
@@ -133,8 +135,8 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
           >
             <span className="radio-mark">{!draft.isRepetitive ? "✓" : ""}</span>
             <span>
-              <strong>Inmersión simple</strong>
-              <small>Calcula Tabla I, límite sin descompresión y grupo final.</small>
+              <strong>{copy.plan.simpleDive}</strong>
+              <small>{copy.plan.simpleDiveDescription}</small>
             </span>
           </button>
           <button
@@ -144,8 +146,8 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
           >
             <span className="radio-mark">{draft.isRepetitive ? "✓" : ""}</span>
             <span>
-              <strong>Buceo repetitivo</strong>
-              <small>Agrega intervalo en superficie, segunda inmersión y nitrógeno residual en minutos.</small>
+              <strong>{copy.plan.repetitiveDive}</strong>
+              <small>{copy.plan.repetitiveDiveDescription}</small>
             </span>
           </button>
         </div>
@@ -153,16 +155,16 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
 
       {draft.isRepetitive && (
         <div className="content-card repetitive-card">
-          <h2>Buceo repetitivo</h2>
+          <h2>{copy.plan.repetitiveDive}</h2>
           <NoticeBox
             tone="warning"
-            title="Dato nuevo requerido"
-            message="Ingresá cuánto tiempo permaneció fuera del agua el buzo entre la primera y la segunda inmersión."
+            title={copy.plan.newDataTitle}
+            message={copy.plan.newDataMessage}
           />
 
           <DurationInput
-            label="Tiempo fuera del agua"
-            helper="Intervalo en superficie entre la primera y la segunda inmersión."
+            label={copy.plan.surfaceInterval}
+            helper={copy.plan.surfaceIntervalHelper}
             valueMinutes={draft.surfaceIntervalMinutes}
             minMinutes={1}
             maxMinutes={720}
@@ -171,9 +173,9 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
           />
 
           <div className="repetitive-subsection">
-            <h3>Segunda inmersión</h3>
+            <h3>{copy.plan.secondDive}</h3>
             <label className="field">
-              <span>Profundidad planificada de la segunda inmersión ({depthUnit})</span>
+              <span>{copy.plan.secondDepth} ({depthUnit})</span>
               <input
                 inputMode="decimal"
                 min="1"
@@ -188,8 +190,8 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
               onSelect={(secondDiveDepth) => onChange({ secondDiveDepth })}
             />
             <DurationInput
-              label="Tiempo de fondo — segunda inmersión"
-              helper="Duración planificada para la segunda inmersión."
+              label={copy.plan.secondBottomTime}
+              helper={copy.plan.secondBottomTimeHelper}
               valueMinutes={draft.secondDiveBottomTime}
               minMinutes={1}
               maxMinutes={720}
@@ -202,19 +204,19 @@ export function RecreationalPlanScreen({ draft, onChange, onBack, onCalculate }:
 
       <div className="content-card content-card--compact">
         <span>Gas</span>
-        <strong>Aire</strong>
-        <small>Otros gases quedan fuera del alcance de esta versión.</small>
+        <strong>{copy.common.air}</strong>
+        <small>{copy.plan.gasScope}</small>
       </div>
 
       <NoticeBox
         tone="warning"
-        title="Planificación asistida"
-        message="Este resultado no autoriza una inmersión. Debe compararse manualmente con criterio profesional, tablas oficiales y procedimientos aplicables."
+        title={copy.plan.safetyTitle}
+        message={copy.plan.safetyMessage}
       />
 
       <PrimaryActionBar
-        secondaryLabel="Inicio"
-        primaryLabel="Calcular"
+        secondaryLabel={copy.common.home}
+        primaryLabel={copy.common.calculate}
         primaryDisabled={!canCalculate}
         onSecondary={onBack}
         onPrimary={onCalculate}

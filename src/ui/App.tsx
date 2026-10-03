@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { calculateRecreationalAirDive } from "../domain/dive-planner-core/recreational/air/AirDiveCalculator";
 import type { RecreationalAirDiveInput, RecreationalAirDiveResult } from "../domain/dive-planner-core/recreational/air/recreationalAirTypes";
+import { LanguageToggle } from "./components/LanguageToggle";
 import { ThemeToggle, type ThemeMode } from "./components/ThemeToggle";
 import { StartScreen } from "./screens/StartScreen";
 import { CalculationDetailScreen } from "./screens/recreational/CalculationDetailScreen";
@@ -89,7 +90,10 @@ export function App() {
 
   return (
     <main className="app-shell">
-      <ThemeToggle theme={theme} onChange={setTheme} />
+      <div className="app-controls">
+        <LanguageToggle />
+        <ThemeToggle theme={theme} onChange={setTheme} />
+      </div>
       {currentStep === "start" && <StartScreen onStart={startNewPlan} onDemo={startDemoPlan} />}
       {currentStep === "plan" && <RecreationalPlanScreen draft={draft} onChange={updateDraft} onBack={resetAndGoHome} onCalculate={calculatePlan} />}
       {currentStep === "result" && result && <RecreationalResultScreen result={result} onBack={() => setCurrentStep("plan")} onDetail={() => setCurrentStep("calculationDetail")} onValidate={() => setCurrentStep("humanValidation")} onNewPlan={resetAndGoHome} />}
