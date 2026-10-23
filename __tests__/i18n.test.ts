@@ -15,6 +15,27 @@ describe("BETA-01 i18n", () => {
       .toContain("12 h 00 min");
   });
 
+
+  it("uses Brazilian diving terminology in the beta copy", () => {
+    expect(copies["pt-BR"].result.finalPressureGroup).toBe("Grupo repetitivo final");
+    expect(copies["pt-BR"].plan.surfaceInterval).toBe("Intervalo de superfície");
+    expect(copies["pt-BR"].result.residualNitrogen).toBe("Tempo de nitrogênio residual");
+    expect(copies["pt-BR"].result.adjustedLimit).toBe("Limite ajustado sem descompressão");
+  });
+
+  it("does not leak Spanish table wording into the Portuguese source trace", () => {
+    const localized = localizedStep({
+      id: "source-001",
+      category: "source",
+      title: "Fuente técnica seleccionada",
+      detail: "CMAS/FEDECAS. Tabla I, Tabla II y Tabla III. Datasets: test. Motor: 2.5.2."
+    }, "pt-BR");
+
+    expect(localized.detail).toContain("Tabela I, Tabela II e Tabela III");
+    expect(localized.detail).toContain("Conjuntos de dados:");
+    expect(localized.detail).not.toContain("Tabla");
+  });
+
   it("localizes calculation trace data without changing engine values", () => {
     const localized = localizedStep({
       id: "lookup-002",
