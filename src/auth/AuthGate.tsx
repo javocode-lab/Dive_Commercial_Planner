@@ -65,6 +65,7 @@ function LoginScreen() {
     event.preventDefault();
     setBusy(true);
     setError(null);
+    setMessage(null);
 
     try {
       await verifyOtp(email, token);

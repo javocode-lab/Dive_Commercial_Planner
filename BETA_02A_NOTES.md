@@ -42,6 +42,31 @@ Never put a Supabase secret key / legacy service_role key in Vite or Netlify var
 3. Create/invite beta users from Authentication > Users.
 4. For the project owner/admin, update `public.profiles.role` to `ADMIN` in the Table Editor after the user exists.
 
+## Supabase Auth operational configuration
+
+The DCP authentication contract expects a 6-digit email OTP.
+
+Required Supabase configuration:
+
+- Authentication > Sign In / Providers > Email.
+- Email OTP length: `6`.
+- Email OTP expiration: `3600` seconds.
+- DCP uses `signInWithOtp()` with `shouldCreateUser: false`.
+- Beta accounts must be created administratively before the user can request an OTP.
+- Do not enable public/self-registration for the closed beta.
+
+### OTP configuration incident
+
+During the first production E2E validation, Supabase was configured to generate 8-digit OTP codes while DCP accepted exactly 6 digits.
+
+This caused valid, recently issued codes to fail verification.
+
+Resolution:
+
+- Supabase Email OTP Length changed from `8` to `6`.
+- Email OTP expiration remained at `3600` seconds.
+- No authentication engine change was required in DCP.
+
 ## Validation
 
 - Unknown/non-invited email cannot create an account from the app.
